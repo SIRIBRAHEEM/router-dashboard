@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Router Control</title>
+<style>
+:root{--bg:#0c1018;--card:#161c30;--card2:#1c2440;--line:#25304d;--txt:#eef2fb;--mut:#8b9bb8;--dim:#5d6b85;
+ --blue:#3b82f6;--cyan:#22d3ee;--grn:#22c55e;--amb:#f59e0b;--red:#ef4444}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+ background:radial-gradient(1200px 600px at 50% -10%,#16203a 0%,var(--bg) 60%);
+ color:var(--txt);min-height:100vh;display:flex;justify-content:center;padding:32px 16px 60px}
+.wrap{width:100%;max-width:440px}
+.head{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.dot{width:11px;height:11px;border-radius:50%;background:var(--grn);box-shadow:0 0 0 3px rgba(34,197,94,.18)}
+.dot.off{background:var(--red);box-shadow:0 0 0 3px rgba(239,68,68,.18)}
+.ttl{font-size:19px;font-weight:700}
+.net{margin-left:auto;font-size:12px;color:var(--mut);font-weight:600;padding:4px 11px;
+     border:1px solid var(--line);border-radius:999px;background:var(--card)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:16px}
+.ct{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);
+    margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.ct::before{content:"";width:3px;height:14px;border-radius:2px;background:var(--blue)}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mb{display:flex;flex-direction:column;align-items:center;gap:3px;padding:16px 8px;border-radius:14px;
+    border:1.5px solid var(--line);background:var(--card2);color:var(--txt);cursor:pointer;font:inherit;transition:all .18s}
+.mb .ico{font-size:22px}.mb .lb{font-size:13.5px;font-weight:650}.mb .sb{font-size:10.5px;color:var(--dim);font-weight:500}
+.mb:hover{border-color:var(--blue);transform:translateY(-1px)}.mb:active{transform:scale(.97)}
+.mb.active{border-color:var(--blue);background:linear-gradient(180deg,#1a2542,#141c33);box-shadow:0 0 0 1px var(--blue) inset}
+.mb.active .lb{color:#fff}
+.hint{font-size:11.5px;color:var(--dim);text-align:center;margin-top:12px}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.sb2{text-align:center;padding:14px 8px;background:var(--card2);border:1px solid var(--line);border-radius:14px}
+.sv{font-size:26px;font-weight:750;font-variant-numeric:tabular-nums;
+    background:linear-gradient(180deg,#fff,#c7d2fe);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sb2.up .sv{background:linear-gradient(180deg,#fff,#bbf7d0);-webkit-background-clip:text;background-clip:text}
+.sl{font-size:11px;color:var(--mut);margin-top:3px;font-weight:600}
+.bars{display:flex;flex-direction:column;gap:7px}
+.bar{height:5px;background:#0d1322;border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;border-radius:99px;transition:width .5s;background:linear-gradient(90deg,var(--blue),var(--cyan))}
+.bar.up i{background:linear-gradient(90deg,#16a34a,var(--grn))}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
+.tab{padding:8px 2px;font-size:12px;font-weight:650;color:var(--mut);text-align:center;border:1px solid var(--line);
+     border-radius:10px;background:transparent;cursor:pointer;font:inherit;transition:all .15s}
+.tab:hover{color:var(--txt);border-color:var(--blue)}.tab.active{color:#fff;border-color:var(--blue);background:var(--blue)}
+.pk{font-size:11.5px;color:var(--dim);text-align:center;margin-bottom:10px;font-weight:600}
+.ur{display:flex;justify-content:space-between;font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--line)}
+.ur:last-child{border-bottom:none}.ur span{color:var(--mut)}.ur b{font-weight:700;font-variant-numeric:tabular-nums}
+.foot{font-size:11px;color:var(--dim);text-align:center;margin-top:12px;line-height:1.5}
+.sr{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px solid var(--line)}
+.sr:last-child{border-bottom:none}.sr span{color:var(--mut)}.sr b{font-weight:650}
+.ok{color:var(--grn)}.warn{color:var(--amb)}.red{color:var(--red)}
+#toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:var(--card2);
+       border:1px solid var(--line);padding:11px 20px;border-radius:12px;font-size:13px;font-weight:500;
+       opacity:0;pointer-events:none;transition:all .3s;box-shadow:0 8px 30px rgba(0,0,0,.4);z-index:99}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style></head><body>
+<div class="wrap">
+<header class="head"><span class="dot" id="dot"></span><span class="ttl">Router Control</span><span class="net" id="net">--</span></header>
+
+<section class="card">
+ <h2 class="ct">Network Mode</h2>
+ <div class="modes">
+  <button class="mb" id="m-auto" onclick="setMode('auto')"><span class="ico">&#9889;</span><span class="lb">Auto</span><span class="sb">4G / 3G</span></button>
+  <button class="mb" id="m-4g" onclick="setMode('4g')"><span class="ico">&#128640;</span><span class="lb">4G LTE</span><span class="sb">fastest</span></button>
+  <button class="mb" id="m-3g" onclick="setMode('3g')"><span class="ico">&#128246;</span><span class="lb">3G</span><span class="sb">stable</span></button>
+  <button class="mb" id="m-2g" onclick="setMode('2g')"><span class="ico">&#128251;</span><span class="lb">2G</span><span class="sb">basic</span></button>
+ </div>
+ <p class="hint" id="msg">Switching reconnects the network for ~20 seconds.</p>
+</section>
+
+<section class="card">
+ <h2 class="ct">Real-Time Speed</h2>
+ <div class="sg">
+  <div class="sb2"><div class="sv" id="dl">0</div><div class="sl">Download</div></div>
+  <div class="sb2 up"><div class="sv" id="ul">0</div><div class="sl">Upload</div></div>
+ </div>
+ <div class="bars"><div class="bar"><i id="rxbar"></i></div><div class="bar up"><i id="txbar"></i></div></div>
+</section>
+
+<section class="card">
+ <h2 class="ct">Data Usage</h2>
+ <div class="tabs">
+  <button class="tab active" onclick="pickTab(this,'daily')">Daily</button>
+  <button class="tab" onclick="pickTab(this,'weekly')">Weekly</button>
+  <button class="tab" onclick="pickTab(this,'monthly')">Monthly</button>
+  <button class="tab" onclick="pickTab(this,'yearly')">Yearly</button>
+ </div>
+ <div class="pk" id="pkey">--</div>
+ <div class="ur"><span>Downloaded</span><b id="urx">0 B</b></div>
+ <div class="ur"><span>Uploaded</span><b id="utx">0 B</b></div>
+ <div class="ur"><span>Total</span><b id="utot">0 B</b></div>
+ <p class="foot">Stored on this computer. Clearing browser data does not affect it.</p>
+</section>
+
+<section class="card"><h2 class="ct">Status</h2><div id="stats">loading...</div></section>
+</div>
+<div id="toast"></div>
+<script>
+var FIELDS=[["network_type","Type"],["sub_network_type","Detail"],["remo_band","Band"],
+            ["remo_rsrp","Signal"],["remo_sinr","Quality"],["signalbar","Bars"],
+            ["ppp_status","Connection"],["wan_apn","APN"],["m_profile_name","Profile"]];
+var API_BASE = "";
+function api(path){return API_BASE+path;}
+function cls(v){return/connected/i.test(v)?"ok":/wcdma|gsm/i.test(v)?"warn":"";}
+function fmt(b){return b>=1073741824?(b/1073741824).toFixed(2)+" GB":b>=1048576?(b/1048576).toFixed(2)+" MB":b>=1024?(b/1024).toFixed(1)+" KB":Math.round(b)+" B";}
+function fmts(b){return b>=1048576?(b/1048576).toFixed(2)+"<small> MB/s</small>":b>=1024?(b/1024).toFixed(1)+"<small> KB/s</small>":Math.round(b)+"<small> B/s</small>";}
+var UVIEW="daily";
+function pickTab(b,p){UVIEW=p;document.querySelectorAll(".tab").forEach(function(x){x.classList.remove("active")});b.classList.add("active");usage();}
+function toast(t){var e=document.getElementById("toast");e.textContent=t;e.classList.add("show");setTimeout(function(){e.classList.remove("show")},4000);}
+function st(){
+   fetch(api("/api/status")).then(function(r){return r.json()}).then(function(j){
+  var d=document.getElementById("dot");var on=j.ppp_status&&/connected/i.test(j.ppp_status);
+  d.className="dot"+(on?"":" off");document.getElementById("net").textContent=j.network_type||"--";
+  var h="";FIELDS.forEach(function(f){var v=(j[f[0]]===undefined||j[f[0]]==="")?"--":j[f[0]];h+='<div class="sr"><span>'+f[1]+"</span><b class='"+cls(v)+"'>"+v+"</b></div>";});
+  document.getElementById("stats").innerHTML=h;
+  var cur=/LTE/i.test(j.network_type||"")?"4g":/WCDMA|GSM/i.test(j.network_type||"")?"3g":"auto";
+  ["auto","4g","3g","2g"].forEach(function(m){document.getElementById("m-"+m).classList.toggle("active",m===cur);});
+  }).catch(function(){if(!API_BASE)document.getElementById("stats").innerHTML='<span class=\"warn\">Cannot reach router (is the laptop on?)</span>';});
+}
+function usage(){
+  fetch(api("/api/usage")).then(function(r){return r.json()}).then(function(j){
+  document.getElementById("dl").innerHTML=fmts(j.rx_bps||0);document.getElementById("ul").innerHTML=fmts(j.tx_bps||0);
+  var m=2097152;document.getElementById("rxbar").style.width=Math.min(100,(j.rx_bps||0)/m*100)+"%";
+  document.getElementById("txbar").style.width=Math.min(100,(j.tx_bps||0)/m*100)+"%";
+  var p=j[UVIEW]||{key:"",rx:0,tx:0};document.getElementById("pkey").textContent=p.key||"--";
+  document.getElementById("urx").textContent=fmt(p.rx||0);document.getElementById("utx").textContent=fmt(p.tx||0);
+  document.getElementById("utot").textContent=fmt((p.rx||0)+(p.tx||0));
+ }).catch(function(){});}
+function setMode(m){toast("Switching... reconnecting in ~20 s");fetch(api("/api/set?mode="+m)).then(function(r){return r.json()}).then(function(){setTimeout(st,16000);setTimeout(st,26000);}).catch(function(e){toast("Failed: "+e);});}
+fetch("/config.json").then(r=>r.json()).then(c=>{if(c.api_base)API_BASE=c.api_base;st();}).catch(()=>{st();});
+usage();setInterval(st,8000);setInterval(usage,2000);
+</script></body></html>
